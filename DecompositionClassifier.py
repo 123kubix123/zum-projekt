@@ -46,4 +46,24 @@ class DecompositionClassifier:
   def print_scores(self):
     for model in self.__models:
       print(str(model['class']) + ' : ' +str(model['score']))
+
+  def predict(self, X):
+    predictions = []
+    for sample in X:
+      class_assignments_for_sample = []
+      # go through each model
+      for model in self.__models:
+        pred = model['classifier'].predict([sample])
+        #gather only true predictions
+        if pred == 1:
+          class_assignments_for_sample.append({'class': model['class'], 'score': model['score']})
+      # if there is no model that classified the sample assign class of the model with worse score
+      if len(class_assignments_for_sample) == 0:
+        predictions.append(min(self.__models, key=lambda val: val['score'])['class'])
+      # if one or more models predicted some class, assign class of best scoring model
+      else:
+        predictions.append(max(class_assignments_for_sample, key=lambda val:val['score'])['class'])
+    return predictions
+
+        
       
