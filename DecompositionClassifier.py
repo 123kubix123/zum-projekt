@@ -1,4 +1,6 @@
 from sklearn.model_selection import train_test_split
+from threading import Thread
+
 
 class DecompositionClassifier:
   __models = []
@@ -16,12 +18,9 @@ class DecompositionClassifier:
             unique_values.append(value)
     return unique_values
 
-  def fit(self, X, y, test_size = 0.2, random_state=42, **model_fit_args):
-    # get all classes into a list
-    classes = self.find_unique_values(y)
-    
-    # for each class fit an instance of a given model as a binary classifier (class = 1 or not = 0)
-    for c in classes:
+  def __fit_single_model(self, X, y, c, test_size, random_state, model_fit_args):
+ #     print(X)
+  #    print(y)
       examples = []
       target = []
       model = {'class': c, 'classifier': self.classifier(**self.model_constructor_args)}
@@ -42,6 +41,19 @@ class DecompositionClassifier:
       model['score'] = model['classifier'].score(X_test, y_test)
 
       self.__models.append(model)
+
+  def fit(self, X, y, test_size = 0.2, random_state=42, **model_fit_args):
+    # get all classes into a list
+    classes = self.find_unique_values(y)
+    
+    threads = []
+    # for each class fit an instance of a given model as a binary classifier (class = 1 or not = 0)
+    for c in classes:
+      t = Thread(target=self.__fit_single_model, args=(X, y, c, test_size, random_state, model_fit_args))
+      threads.append(t)
+      t.start()
+    for t in threads:
+      t.join()
 
   def print_scores(self):
     for model in self.__models:
