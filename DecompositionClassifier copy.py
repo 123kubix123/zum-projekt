@@ -1,7 +1,5 @@
 from sklearn.model_selection import train_test_split
 from threading import Thread
-import random
-import numpy as np
 
 
 class DecompositionClassifier:
@@ -21,17 +19,17 @@ class DecompositionClassifier:
             unique_values.append(value)
     return unique_values
 
-  def __fit_single_model(self, X, y, classifier_no, test_size, random_state, model_fit_args):
+  def __fit_single_model(self, X, y, c, test_size, random_state, model_fit_args):
  #     print(X)
   #    print(y)
       examples = []
       target = []
-      model =  self.classifier(**self.model_constructor_args)
+      model = {'class': c, 'classifier': self.classifier(**self.model_constructor_args)}
 
       # assign new class labels
       for i, value in enumerate(y):
         examples.append(X[i])
-        if value == c: # TODO: i'm here, i have classifier_no and ecoc matrix, now need to check for class id in given row
+        if value == c:
           target.append(1)
         else:
           target.append(0)
@@ -47,30 +45,16 @@ class DecompositionClassifier:
 
   def fit(self, X, y, test_size = 0.2, random_state=42, **model_fit_args):
     # get all classes into a list
-    self.classes = self.find_unique_values(y)
-
-    self.ecoc_matrix = np.zeros((len(self.classes), self.code_size))
+    classes = self.find_unique_values(y)
+    
     threads = []
-
-    for i in range(0, len(self.classes)):
-      while True:
-        code_for_class = []
-        for j in range(0,self.code_size):
-            code_for_class.append(random.randint(0, 1))
-        if code_for_class not in self.ecoc_matrix.tolist():
-            self.ecoc_matrix[i] = code_for_class
-            break
-
-    self.__models = [None] * self.code_size
-
-    for classifier_no in range(0, self.code_size):
-      self.__fit_single_model(X, y, classifier_no, test_size, random_state, model_fit_args)   
-
-    #   t = Thread(target=self.__fit_single_model, args=(X, y, c, test_size, random_state, model_fit_args))
-    #   threads.append(t)
-    #   t.start()
-    # for t in threads:
-    #   t.join()
+    # for each class fit an instance of a given model as a binary classifier (class = 1 or not = 0)
+    for c in classes:
+      t = Thread(target=self.__fit_single_model, args=(X, y, c, test_size, random_state, model_fit_args))
+      threads.append(t)
+      t.start()
+    for t in threads:
+      t.join()
 
   def print_scores(self):
     for model in self.__models:
