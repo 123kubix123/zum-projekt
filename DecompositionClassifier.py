@@ -20,18 +20,25 @@ class DecompositionClassifier:
         if value not in unique_values:
             unique_values.append(value)
     return unique_values
+  
+  def __class_included_in_classifier(self, classifier_no, class_value):
+    if self.ecoc_matrix[self.classes.index(class_value)][classifier_no] == 1:
+      return True
+    else:
+      return False
 
   def __fit_single_model(self, X, y, classifier_no, test_size, random_state, model_fit_args):
  #     print(X)
   #    print(y)
       examples = []
       target = []
-      model =  self.classifier(**self.model_constructor_args)
+      #model =  self.classifier(**self.model_constructor_args)
+      model = {'classifier_no': classifier_no, 'classifier': self.classifier(**self.model_constructor_args)}
 
       # assign new class labels
       for i, value in enumerate(y):
         examples.append(X[i])
-        if value == c: # TODO: i'm here, i have classifier_no and ecoc matrix, now need to check for class id in given row
+        if self.__class_included_in_classifier(classifier_no, value): # TODO: i'm here, i have classifier_no and ecoc matrix, now need to check for class id in given row
           target.append(1)
         else:
           target.append(0)
@@ -40,10 +47,11 @@ class DecompositionClassifier:
       X_train, X_test, y_train, y_test = train_test_split(examples, target, test_size=test_size, random_state=random_state)
 
       # fit model
+      #model.fit(X_train, y_train, **model_fit_args)
       model['classifier'].fit(X_train, y_train, **model_fit_args)
       model['score'] = model['classifier'].score(X_test, y_test)
 
-      self.__models.append(model)
+      self.__models[classifier_no] = model
 
   def fit(self, X, y, test_size = 0.2, random_state=42, **model_fit_args):
     # get all classes into a list
@@ -74,24 +82,34 @@ class DecompositionClassifier:
 
   def print_scores(self):
     for model in self.__models:
-      print(str(model['class']) + ' : ' +str(model['score']))
+      print(str(model['classifier_no']) + ' : ' +str(model['score']))
+
+  @staticmethod
+  def __hamming_distance(a, b):
+    if len(a) != len(b):
+      return False
+    distance = 0
+    for i in range(0, len(a)):
+      if a[i] != b[i]:
+        distance += 1
+    return distance
 
   def predict(self, X):
     predictions = []
     for sample in X:
-      class_assignments_for_sample = []
+      classification_vector = []
       # go through each model
       for model in self.__models:
-        pred = model['classifier'].predict([sample])
-        #gather only true predictions
-        if pred == 1:
-          class_assignments_for_sample.append({'class': model['class'], 'score': model['score']})
-      # if there is no model that classified the sample assign class of the model with worse score
-      if len(class_assignments_for_sample) == 0:
-        predictions.append(min(self.__models, key=lambda val: val['score'])['class'])
-      # if one or more models predicted some class, assign class of best scoring model
-      else:
-        predictions.append(max(class_assignments_for_sample, key=lambda val:val['score'])['class'])
+        prediction = model['classifier'].predict([sample])
+        classification_vector.append(prediction)
+
+      hamming_distances_for_clas_vectors = []
+      for i in range(0, len(self.ecoc_matrix)):
+        hamming_distances_for_clas_vectors\
+          .append(self.__hamming_distance(classification_vector, self.ecoc_matrix[i]))
+      
+      prediction = self.classes[hamming_distances_for_clas_vectors.index(max(hamming_distances_for_clas_vectors))]
+      predictions.append(prediction)
     return predictions
 
         

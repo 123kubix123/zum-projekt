@@ -17,7 +17,8 @@ X_train, X_test, y_train, y_test = train_test_split(data.data, data.target, test
 model.fit(X_train, y_train)
 model_oryg = RandomForestClassifier()
 model_oryg.fit(X_train, y_train)
-#model.print_scores()
+model.print_scores()
+
 
 #print(data.target[0])
 test = X_test.tolist()
