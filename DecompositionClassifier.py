@@ -101,14 +101,15 @@ class DecompositionClassifier:
       # go through each model
       for model in self.__models:
         prediction = model['classifier'].predict([sample])
-        classification_vector.append(prediction)
+        classification_vector.append(prediction[0])
 
       hamming_distances_for_clas_vectors = []
       for i in range(0, len(self.ecoc_matrix)):
         hamming_distances_for_clas_vectors\
           .append(self.__hamming_distance(classification_vector, self.ecoc_matrix[i]))
       
-      prediction = self.classes[hamming_distances_for_clas_vectors.index(max(hamming_distances_for_clas_vectors))]
+      predicted_class_id = hamming_distances_for_clas_vectors.index(min(hamming_distances_for_clas_vectors))
+      prediction = self.classes[predicted_class_id]
       predictions.append(prediction)
     return predictions
 

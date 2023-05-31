@@ -1,13 +1,13 @@
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
-from sklearn.datasets import fetch_covtype
+from sklearn.datasets import fetch_covtype, load_iris
 import numpy as np
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
 from DecompositionClassifier import DecompositionClassifier
 
-data = fetch_covtype()
+data = load_iris()
 
 #model = DecompositionClassifier(RandomForestClassifier, max_depth=2, n_estimators=3, max_features=1)
 model = DecompositionClassifier(RandomForestClassifier)
