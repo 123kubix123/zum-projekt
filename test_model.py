@@ -11,18 +11,18 @@ from DecompositionClassifier import DecompositionClassifier
 
 def synth_data(size = 3000):
     data = make_classification(size, 10, n_informative=6, n_classes=5, random_state=42)
-    target = data[1]
-    data = data[0]
-    return data, target
+    X = data[1]
+    y = data[0]
+    return X, y
 
 def load_letter():
     data = pd.read_csv('datasets/letter/letter.csv')
-    target = data['Class'].values.tolist()
-    data = data.drop('Class', axis=1).values.tolist()
-    return data, target
+    y = data['Class'].values.tolist()
+    X = data.drop('Class', axis=1).values.tolist()
+    return X, y
 
-def run_single(model_our, model_base, data, target):
-    X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=0.2)
+def run_single(model_our, model_base, X, y):
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
     start_time = time.time()
     model_our.fit(X_train, y_train)
@@ -42,24 +42,22 @@ def run_single(model_our, model_base, data, target):
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
-def run_k_fold(model_our, model_base, data):
-    X = data[0]
-    y = data[1]
-
+def run_k_fold(model_our, model_base, X, y):
     start_time = time.time()
 
     scores_our = cross_val_score(model_our, X, y, cv=10)
     print("our: %0.2f accuracy with a standard deviation of %0.2f" % (scores_our.mean(), scores_our.std()))
-
     print("--- %s seconds ---" % (time.time() - start_time))
 
+    start_time = time.time()
     scores_base = cross_val_score(model_base, X, y, cv=10)
     print("base: %0.2f accuracy with a standard deviation of %0.2f" % (scores_base.mean(), scores_base.std()))
+    print("--- %s seconds ---" % (time.time() - start_time))
 
 
 model_our = DecompositionClassifier(RandomForestClassifier, code_size=5)
 model_base = RandomForestClassifier()
 
-data, target = load_letter()
+X, y = load_letter()
 
-run_single(model_our, model_base, data, target)
+run_k_fold(model_our, model_base, X, y)
