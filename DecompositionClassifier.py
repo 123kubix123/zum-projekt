@@ -69,7 +69,7 @@ class DecompositionClassifier:
     self.__classes_ = self.find_unique_values(y)
 
     self.__ecoc_matrix_ = np.zeros((len(self.__classes_), self.__code_size))
-    threads = []
+    
 
     for i in range(0, len(self.__classes_)):
       while True:
@@ -82,14 +82,14 @@ class DecompositionClassifier:
 
     self.__models_ = [None] * self.__code_size
 
-    for classifier_no in range(0, self.__code_size):
-      self.__fit_single_model(X, y, classifier_no, test_size, random_state, model_fit_args)   
+    threads = []
 
-    #   t = Thread(target=self.__fit_single_model, args=(X, y, c, test_size, random_state, model_fit_args))
-    #   threads.append(t)
-    #   t.start()
-    # for t in threads:
-    #   t.join()
+    for classifier_no in range(0, self.__code_size):
+      t = Thread(target=self.__fit_single_model, args=(X, y, classifier_no, test_size, random_state, model_fit_args))
+      threads.append(t)
+      t.start()
+    for t in threads:
+      t.join()
 
   def print_scores(self):
     for model in self.__models_:
