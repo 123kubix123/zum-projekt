@@ -6,43 +6,60 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split, cross_val_score
 import sklearn
 import time
-
+import pandas as pd
 from DecompositionClassifier import DecompositionClassifier
 
-data = make_classification(50000, 10, n_informative=6, n_classes=5, random_state=42)
+def synth_data(size = 3000):
+    data = make_classification(size, 10, n_informative=6, n_classes=5, random_state=42)
+    target = data[1]
+    data = data[0]
+    return data, target
+
+def load_letter():
+    data = pd.read_csv('datasets/letter/letter.csv')
+    target = data['Class'].values.tolist()
+    data = data.drop('Class', axis=1).values.tolist()
+    return data, target
+
+def run_single(model_our, model_base, data, target):
+    X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=0.2)
+
+    start_time = time.time()
+    model_our.fit(X_train, y_train)
+    print("--- %s seconds ---" % (time.time() - start_time))
+
+    model_base = RandomForestClassifier()
+    model_base.fit(X_train, y_train)
+
+    start_time = time.time()
+    our_predictions = model_our.predict(X_test)
+    print(f'our acc: {accuracy_score(y_test, our_predictions)}')
+    print("--- %s seconds ---" % (time.time() - start_time))
+    
+    start_time = time.time()
+    base_predictions = model_base.predict(X_test)
+    print(f'base acc: {accuracy_score(y_test, base_predictions)}')
+    print("--- %s seconds ---" % (time.time() - start_time))
+
+
+def run_k_fold(model_our, model_base, data):
+    X = data[0]
+    y = data[1]
+
+    start_time = time.time()
+
+    scores_our = cross_val_score(model_our, X, y, cv=10)
+    print("our: %0.2f accuracy with a standard deviation of %0.2f" % (scores_our.mean(), scores_our.std()))
+
+    print("--- %s seconds ---" % (time.time() - start_time))
+
+    scores_base = cross_val_score(model_base, X, y, cv=10)
+    print("base: %0.2f accuracy with a standard deviation of %0.2f" % (scores_base.mean(), scores_base.std()))
+
 
 model_our = DecompositionClassifier(RandomForestClassifier, code_size=5)
-model_oryg = RandomForestClassifier()
+model_base = RandomForestClassifier()
 
-""" 
-X_train, X_test, y_train, y_test = train_test_split(data[0], data[1], test_size=0.2)
+data, target = load_letter()
 
-start_time = time.time()
-model_our.fit(X_train, y_train)
-print("--- %s seconds ---" % (time.time() - start_time))
-
-model_oryg = RandomForestClassifier()
-model_oryg.fit(X_train, y_train)
-
-test = X_test.tolist()
-
-our_predictions = model_our.predict(test)
-oryg_predictions = model_oryg.predict(test)
-
-print(f'our acc: {accuracy_score(y_test, our_predictions)}')
-print(f'oryg acc: {accuracy_score(y_test, oryg_predictions)}')  """
-
-
-X = data[0]
-y = data[1]
-
-
-start_time = time.time()
-
-scores_our = cross_val_score(model_our, X, y, cv=10)
-print("%0.2f accuracy with a standard deviation of %0.2f" % (scores_our.mean(), scores_our.std()))
-
-print("--- %s seconds ---" % (time.time() - start_time))
-
-scores_oryg = cross_val_score(model_oryg, X, y, cv=10)
-print("%0.2f accuracy with a standard deviation of %0.2f" % (scores_oryg.mean(), scores_oryg.std()))
+run_single(model_our, model_base, data, target)

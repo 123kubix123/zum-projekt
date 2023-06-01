@@ -7,15 +7,12 @@ from sklearn.metrics import accuracy_score
 
 class DecompositionClassifier:
 
-  def __init__(self, classifier, code_size = 6, compute_score = False, shuffle_data=False, model_constructor_args = {}): 
+  def __init__(self, classifier, code_size = 6, model_constructor_args = {}): 
     self.__params = locals()
     self.__params.pop('self')
-    self.__shuffle_data=shuffle_data
     self.__classifier = classifier
     self.__model_constructor_args = model_constructor_args
     self.__code_size = code_size
-    self.__compute_score = compute_score
-    
 
   @staticmethod
   def find_unique_values(list):
@@ -32,14 +29,9 @@ class DecompositionClassifier:
       return False
 
   def __fit_single_model(self, X, y, classifier_no, test_size, random_state, model_fit_args):
- #     print(X)
-  #    print(y)
-
-      #print(locals())
       examples = []
       target = []
-      #model =  self.classifier(**self.model_constructor_args)
-      model = {'classifier_no': classifier_no, 'classifier': self.__classifier(**self.__model_constructor_args)} 
+      model = self.__classifier(**self.__model_constructor_args)
 
       # assign new class labels
       for i, value in enumerate(y):
@@ -49,19 +41,7 @@ class DecompositionClassifier:
         else:
           target.append(0)
       
-      # train test split
-      if self.__compute_score:
-        X_train, X_test, y_train, y_test = train_test_split(examples, target, test_size=test_size, random_state=random_state)
-      else:
-        X_train = examples
-        y_train = target
-      # fit model
-      model['classifier'].fit(X_train, y_train, **model_fit_args)
-      if self.__compute_score:
-        model['score'] = model['classifier'].score(X_test, y_test)
-      else:
-        model['score'] = 0.0
-
+      model.fit(examples, target, **model_fit_args)
       self.__models_[classifier_no] = model
 
   def fit(self, X, y, test_size = 0.2, random_state=42, **model_fit_args):
@@ -91,10 +71,6 @@ class DecompositionClassifier:
     for t in threads:
       t.join()
 
-  def print_scores(self):
-    for model in self.__models_:
-      print(str(model['classifier_no']) + ' : ' +str(model['score']))
-
   @staticmethod
   def __hamming_distance(a, b):
     if len(a) != len(b):
@@ -111,15 +87,15 @@ class DecompositionClassifier:
       classification_vector = []
       # go through each model
       for model in self.__models_:
-        prediction = model['classifier'].predict([sample])
+        prediction = model.predict([sample])
         classification_vector.append(prediction[0])
 
-      hamming_distances_for_clas_vectors = []
+      hamming_distances_for_class_vectors = []
       for i in range(0, len(self.__ecoc_matrix_)):
-        hamming_distances_for_clas_vectors\
+        hamming_distances_for_class_vectors\
           .append(self.__hamming_distance(classification_vector, self.__ecoc_matrix_[i]))
       
-      predicted_class_id = hamming_distances_for_clas_vectors.index(min(hamming_distances_for_clas_vectors))
+      predicted_class_id = hamming_distances_for_class_vectors.index(min(hamming_distances_for_class_vectors))
       prediction = self.__classes_[predicted_class_id]
       predictions.append(prediction)
     return predictions
