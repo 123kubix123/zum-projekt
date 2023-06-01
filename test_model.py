@@ -11,8 +11,8 @@ from DecompositionClassifier import DecompositionClassifier
 
 def synth_data(size = 3000):
     data = make_classification(size, 10, n_informative=6, n_classes=5, random_state=42)
-    X = data[1]
-    y = data[0]
+    y = data[1]
+    X = data[0]
     return X, y
 
 def load_letter():
