@@ -1,3 +1,4 @@
+import pickle
 from threading import Thread
 import random
 import numpy as np
@@ -131,3 +132,7 @@ class DecompositionClassifier:
 
     def get_params(self, deep=True):
         return self.__params
+
+    def dump(self, filename):
+        with open(filename, 'wb') as handle:
+            pickle.dump(self, handle)
