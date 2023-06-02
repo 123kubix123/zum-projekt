@@ -21,7 +21,26 @@ def load_letter(n=None):
         data = data.sample(n)
     y = data['Class'].values.tolist()
     X = data.drop('Class', axis=1).values.tolist()
-    print('Successfully loaded letters')
+    print('Successfully loaded letters dataset.')
+    return X, y
+
+
+def load_fars(n=None):
+    data = pd.read_csv('datasets/fars/fars.csv')
+    if n:
+        data = data.sample(n)
+    y = data['INJURY_SEVERITY'].values.tolist()
+    X = data.drop('INJURY_SEVERITY', axis=1).values.tolist()
+    print('Successfully loaded fars dataset.')
+    return X, y
+
+def load_thyroid(n=None):
+    data = pd.read_csv('datasets/thyroid/thyroid.csv')
+    if n:
+        data = data.sample(n)
+    y = data['Class'].values.tolist()
+    X = data.drop('Class', axis=1).values.tolist()
+    print('Successfully loaded thyroid dataset.')
     return X, y
 
 
@@ -64,7 +83,9 @@ model_our_path = './tmp_model_our.picle'
 model_our = DecompositionClassifier(RandomForestClassifier, code_size=5)
 model_base = RandomForestClassifier()
 
-X, y = load_letter(n=5000)
+#X, y = load_letter()
+X, y = load_thyroid()
+#X, y = load_fars(n=500)
 run_k_fold(model_our, model_base, X, y)
 
 # zapis
