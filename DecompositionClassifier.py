@@ -1,6 +1,3 @@
-import warnings
-
-from sklearn.model_selection import train_test_split
 from threading import Thread
 import random
 import numpy as np
@@ -19,7 +16,7 @@ class DecompositionClassifier:
 
     @staticmethod
     def find_unique_values(values):
-        #return np.unique(values)
+        # return np.unique(values)
         unique_values = []
         for value in values:
             if value not in unique_values:
@@ -93,15 +90,20 @@ class DecompositionClassifier:
         prediction_matrix = np.array(preds).T
 
         distance_matrix = cdist(prediction_matrix, self.__ecoc_matrix_)
+
+        """
         # co tutaj jeśli mamy taki sam min dystans?
         min_distance = np.min(distance_matrix, axis=1)
 
         diff = (distance_matrix == min_distance.repeat(distance_matrix.shape[1]).reshape(distance_matrix.shape))
         if np.any(np.sum(diff, axis=1) != np.ones(diff.shape[0])):
-            # wtedy mamy więcej niż 1 kandydata na którąś predykcję
-            warnings.warn("More than one matching prediction, returning first")
+            # "Ties are broken arbitrarily in favor of the class that comes first in the class ordering."
+            # warnings.warn("More than one matching prediction, returning first")
+            pass
+        """
+
         predictions_ids = np.argmin(distance_matrix, axis=1)
-        predictions = [self.__classes_[id] for id in predictions_ids]
+        predictions = [self.__classes_[id_] for id_ in predictions_ids]
 
         """
         predictions = []

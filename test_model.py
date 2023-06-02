@@ -68,9 +68,9 @@ X, y = load_letter(n=5000)
 run_k_fold(model_our, model_base, X, y)
 
 # zapis
-with open(model_base_path, 'wb') as handle:
+with open(model_our_path, 'wb') as handle:
     pickle.dump(model_our, handle)
 
 # wczytywanie
-with open(model_base_path, 'rb') as handle:
+with open(model_our_path, 'rb') as handle:
     model = pickle.load(handle)
