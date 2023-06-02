@@ -27,12 +27,12 @@ def load_letter(n=None):
 
 def run_single(model_our, model_base, X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-
+    r_state = 123
     start_time = time.time()
-    model_our.fit(X_train, y_train)
+    model_our.fit(X_train, y_train, random_state=r_state)
     print("--- %s seconds ---" % (time.time() - start_time))
 
-    model_base = RandomForestClassifier()
+    model_base = RandomForestClassifier(random_state=r_state)
     model_base.fit(X_train, y_train)
 
     start_time = time.time()

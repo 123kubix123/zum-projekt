@@ -16,12 +16,12 @@ class DecompositionClassifier:
 
     @staticmethod
     def find_unique_values(values):
-        # return np.unique(values)
-        unique_values = []
-        for value in values:
-            if value not in unique_values:
-                unique_values.append(value)
-        return unique_values
+        return np.unique(values).tolist()
+        #unique_values = []
+        #for value in values:
+        #    if value not in unique_values:
+        #        unique_values.append(value)
+        #return unique_values
 
     def __class_included_in_classifier(self, classifier_no, class_value):
         if self.__ecoc_matrix_[self.__classes_.index(class_value)][classifier_no] == 1:
@@ -29,10 +29,10 @@ class DecompositionClassifier:
         else:
             return False
 
-    def __fit_single_model(self, X, y, classifier_no, test_size, random_state, model_fit_args):
+    def __fit_single_model(self, X, y, classifier_no, random_state, model_fit_args):
         examples = []
         target = []
-        model = self.__classifier(**self.__model_constructor_args)
+        model = self.__classifier(random_state=random_state, **self.__model_constructor_args)
 
         # assign new class labels
         for i, value in enumerate(y):
@@ -45,10 +45,9 @@ class DecompositionClassifier:
         model.fit(examples, target, **model_fit_args)
         self.__models_[classifier_no] = model
 
-    def fit(self, X, y, test_size=0.2, random_state=42, **model_fit_args):
+    def fit(self, X, y, random_state=42, **model_fit_args):
         # get all classes into a list
         self.__classes_ = self.find_unique_values(y)
-
         self.__ecoc_matrix_ = np.zeros((len(self.__classes_), self.__code_size))
 
         for i in range(0, len(self.__classes_)):
@@ -66,7 +65,7 @@ class DecompositionClassifier:
 
         for classifier_no in range(0, self.__code_size):
             t = Thread(target=self.__fit_single_model,
-                       args=(X, y, classifier_no, test_size, random_state, model_fit_args))
+                       args=(X, y, classifier_no, random_state, model_fit_args))
             threads.append(t)
             t.start()
         for t in threads:
