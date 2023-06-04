@@ -1,3 +1,4 @@
+import itertools
 import pickle
 from threading import Thread
 import random
@@ -27,35 +28,32 @@ class DecompositionClassifier:
             return False
 
     def __fit_single_model(self, X, y, classifier_no, random_state, model_fit_args):
-        examples = []
-        target = []
         model = self.__classifier(**self.__model_constructor_args)
-
-        # assign new class labels
-        for i, value in enumerate(y):
-            examples.append(X[i])
-            if self.__class_included_in_classifier(classifier_no, value):
-                target.append(1)
-            else:
-                target.append(0)
-
-        model.fit(examples, target, **model_fit_args)
+        target = [1 if self.__class_included_in_classifier(classifier_no, value) else 0 for value in y]
+        model.fit(X, target, **model_fit_args)
         self.__models_[classifier_no] = model
 
     def fit(self, X, y, random_state=42, **model_fit_args):
         # get all classes into a list
         self.__classes_ = self.find_unique_values(y)
-        self.__ecoc_matrix_ = np.zeros((len(self.__classes_), self.__code_size))
+        code_size = self.__code_size
+        class_len = len(self.__classes_)
+        ecoc_matrix = []
+        if 2**code_size < class_len:
+            raise ValueError("Code size too small")
 
-        for i in range(0, len(self.__classes_)):
-            while True:
-                code_for_class = []
-                for j in range(0, self.__code_size):
-                    code_for_class.append(random.randint(0, 1))
-                if code_for_class not in self.__ecoc_matrix_.tolist():
-                    self.__ecoc_matrix_[i] = code_for_class
-                    break
+        bits = []
+        [bits.append(0)for i in range(self.__code_size)]
+        [bits.append(1) for i in range(self.__code_size)]
 
+        classes_codes_dec = random.sample(range(2**code_size), class_len)
+
+        for code in classes_codes_dec:
+            # convert random number to bits and to list
+            c_list = list(f'{code:0{self.__code_size}b}')
+            ecoc_matrix.append([int(c) for c in c_list])
+
+        self.__ecoc_matrix_ = ecoc_matrix
         self.__models_ = [None] * self.__code_size
 
         threads = []
@@ -100,25 +98,6 @@ class DecompositionClassifier:
 
         predictions_ids = np.argmin(distance_matrix, axis=1)
         predictions = [self.__classes_[id_] for id_ in predictions_ids]
-
-        """
-        predictions = []
-        for sample in X:
-            classification_vector = []
-            # go through each model
-            for model in self.__models_:
-                prediction = model.predict([sample])
-                classification_vector.append(prediction[0])
-
-            hamming_distances_for_class_vectors = []
-            for i in range(0, len(self.__ecoc_matrix_)):
-                hamming_distances_for_class_vectors \
-                    .append(self.__hamming_distance(classification_vector, self.__ecoc_matrix_[i]))
-
-            predicted_class_id = hamming_distances_for_class_vectors.index(min(hamming_distances_for_class_vectors))
-            prediction = self.__classes_[predicted_class_id]
-            predictions.append(prediction)
-        """
 
         return predictions
 

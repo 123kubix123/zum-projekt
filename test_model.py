@@ -85,23 +85,23 @@ def test_model(Classifier, code_size, X, y):
     return scores_our, scores_base
 
 
-model_our_path = './tmp_model_our.picle'
+#model_our_path = './tmp_model_our.picle'
 
 model_our = DecompositionClassifier(RandomForestClassifier, code_size=5)
 model_base = RandomForestClassifier()
 
 #X, y = load_letter()
-#X, y = load_thyroid()
+X, y = load_thyroid()
 #X, y = load_fars()
-#run_k_fold(model_our, model_base, X, y)
+run_k_fold(model_our, model_base, X, y)
 
 # zapis
-with open(model_our_path, 'wb') as handle:
-    pickle.dump(model_our, handle)
+#with open(model_our_path, 'wb') as handle:
+#    pickle.dump(model_our, handle)
 
 # wczytywanie
-with open(model_our_path, 'rb') as handle:
-    model = pickle.load(handle)
+#with open(model_our_path, 'rb') as handle:
+#    model = pickle.load(handle)
 
 
 
@@ -115,7 +115,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
 
-X, y = load_letter(n=5000)
+#X, y = load_letter(n=5000)
 
 classifiers = [
     KNeighborsClassifier,
@@ -129,5 +129,5 @@ classifiers = [
     QuadraticDiscriminantAnalysis,
 ]
 
-test_model(GaussianProcessClassifier, 5, X, y)
+#test_model(GaussianProcessClassifier, 5, X, y)
 
