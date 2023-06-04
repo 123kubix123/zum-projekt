@@ -21,6 +21,46 @@ class DecompositionClassifier:
     def find_unique_values(values):
         return np.unique(values).tolist()
 
+    @staticmethod
+    def exhaustive_codes(k, n):
+        """
+        When 3 <= k(lasy) <= 7, we construct a code of length 2^{k-1}-1 as follows. Row 1 is all ones. Row 2
+        consists of 2{k-2} zeroes followed by 2{k-2}-1 ones. Row 3 consists of 2{k-3}zeroes, followed by 2{k-3}
+        ones, followed by 2{k-3} zeroes, followed by 2{k-3}-1 ones.
+        In row i, there are alternating runs of 2{k-i} zeroes and ones.
+        :param k: class size
+        :param n: code_size
+        :return:
+        """
+        codes = []
+        for i in range(k):
+            ones = [1 for i in range(2 ** (k - i))]
+            zeros = [0 for i in range(2 ** (k - i))]
+
+            if i%2 == 0:
+                tmp = (ones + zeros) * (i+1)
+            else:
+                tmp = (zeros + ones) * (i)
+            codes.append(tmp[:n].copy())
+        return codes
+
+    @staticmethod
+    def rand_hill_climb_codes(k,n):
+        """
+        k >=11
+        :param k: class number
+        :param n: code_size
+        :return:
+        """
+        classes_codes_dec = random.sample(range(2 ** n), int(np.ceil(k/2)))
+        codes = []
+        for code in classes_codes_dec:
+            # convert random number to bits and to list
+            c_list = list(f'{code:0{n}b}')
+            codes.append([int(c) for c in c_list])
+            codes.append([1-int(c) for c in c_list])
+        return codes[:k]
+
     def __class_included_in_classifier(self, classifier_no, class_value):
         if self.__ecoc_matrix_[self.__classes_.index(class_value)][classifier_no] == 1:
             return True
@@ -39,19 +79,14 @@ class DecompositionClassifier:
         code_size = self.__code_size
         class_len = len(self.__classes_)
         ecoc_matrix = []
+
         if 2**code_size < class_len:
             raise ValueError("Code size too small")
 
-        bits = []
-        [bits.append(0)for i in range(self.__code_size)]
-        [bits.append(1) for i in range(self.__code_size)]
-
-        classes_codes_dec = random.sample(range(2**code_size), class_len)
-
-        for code in classes_codes_dec:
-            # convert random number to bits and to list
-            c_list = list(f'{code:0{self.__code_size}b}')
-            ecoc_matrix.append([int(c) for c in c_list])
+        if class_len <= 7:
+            ecoc_matrix = self.exhaustive_codes(class_len, code_size)
+        else:
+            ecoc_matrix = self.rand_hill_climb_codes(class_len, code_size)
 
         self.__ecoc_matrix_ = ecoc_matrix
         self.__models_ = [None] * self.__code_size
