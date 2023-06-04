@@ -14,15 +14,11 @@ class DecompositionClassifier:
         self.__classifier = classifier
         self.__model_constructor_args = model_constructor_args
         self.__code_size = code_size
+        self.__class__.__name__ = f'DecompositionClassifier{classifier.__name__}_{code_size}Fold'
 
     @staticmethod
     def find_unique_values(values):
         return np.unique(values).tolist()
-        #unique_values = []
-        #for value in values:
-        #    if value not in unique_values:
-        #        unique_values.append(value)
-        #return unique_values
 
     def __class_included_in_classifier(self, classifier_no, class_value):
         if self.__ecoc_matrix_[self.__classes_.index(class_value)][classifier_no] == 1:
