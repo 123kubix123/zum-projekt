@@ -68,14 +68,21 @@ def run_single(model_our, model_base, X, y):
 def run_k_fold(model_our, model_base, X, y):
     start_time = time.time()
 
-    scores_our = cross_val_score(model_our, X, y, cv=10)
+    scores_our = cross_val_score(model_our, X, y, cv=5)
     print("our: %0.2f accuracy with a standard deviation of %0.2f" % (scores_our.mean(), scores_our.std()))
     print("--- %s seconds ---" % (time.time() - start_time))
 
     start_time = time.time()
-    scores_base = cross_val_score(model_base, X, y, cv=10)
+    scores_base = cross_val_score(model_base, X, y, cv=5)
     print("base: %0.2f accuracy with a standard deviation of %0.2f" % (scores_base.mean(), scores_base.std()))
     print("--- %s seconds ---" % (time.time() - start_time))
+    return scores_our, scores_base
+
+def test_model(Classifier, code_size, X, y):
+    decomp_model = DecompositionClassifier(Classifier, code_size)
+    pure_model = Classifier()
+    scores_our, scores_base = run_k_fold(decomp_model, pure_model, X, y)
+    return scores_our, scores_base
 
 
 model_our_path = './tmp_model_our.picle'
@@ -84,9 +91,9 @@ model_our = DecompositionClassifier(RandomForestClassifier, code_size=5)
 model_base = RandomForestClassifier()
 
 #X, y = load_letter()
-X, y = load_thyroid()
-#X, y = load_fars(n=500)
-run_k_fold(model_our, model_base, X, y)
+#X, y = load_thyroid()
+#X, y = load_fars()
+#run_k_fold(model_our, model_base, X, y)
 
 # zapis
 with open(model_our_path, 'wb') as handle:
@@ -95,3 +102,32 @@ with open(model_our_path, 'wb') as handle:
 # wczytywanie
 with open(model_our_path, 'rb') as handle:
     model = pickle.load(handle)
+
+
+
+from sklearn.neural_network import MLPClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+
+
+X, y = load_letter(n=5000)
+
+classifiers = [
+    KNeighborsClassifier,
+    SVC,
+    GaussianProcessClassifier,
+    DecisionTreeClassifier,
+    RandomForestClassifier,
+    MLPClassifier,
+    AdaBoostClassifier,
+    GaussianNB,
+    QuadraticDiscriminantAnalysis,
+]
+
+test_model(GaussianProcessClassifier, 5, X, y)
+

@@ -33,7 +33,7 @@ class DecompositionClassifier:
     def __fit_single_model(self, X, y, classifier_no, random_state, model_fit_args):
         examples = []
         target = []
-        model = self.__classifier(random_state=random_state, **self.__model_constructor_args)
+        model = self.__classifier(**self.__model_constructor_args)
 
         # assign new class labels
         for i, value in enumerate(y):
