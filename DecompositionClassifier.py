@@ -15,14 +15,7 @@ class DecompositionClassifier:
         self.__classifier = classifier
         self.__model_constructor_args = model_constructor_args
         self.__code_size = code_size
-        self.name = f'DecompositionClassifier{classifier.__name__}_{code_size}Fold'
-
-    def get_name(self):
-        return self.name
-    
-
-    def print_test(self):
-        print("test")
+        self.__name__ = f'DecompositionClassifier{classifier.__name__}_{code_size}Fold'
 
     @staticmethod
     def find_unique_values(values):
