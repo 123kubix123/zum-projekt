@@ -20,6 +20,10 @@ class DecompositionClassifier:
     def get_name(self):
         return self.name
     
+
+    def print_test(self):
+        print("test")
+
     @staticmethod
     def find_unique_values(values):
         return np.unique(values).tolist()
