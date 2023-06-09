@@ -17,6 +17,9 @@ class DecompositionClassifier:
         self.__code_size = code_size
         self.name = f'DecompositionClassifier{classifier.__name__}_{code_size}Fold'
 
+    def get_name(self):
+        return self.name
+    
     @staticmethod
     def find_unique_values(values):
         return np.unique(values).tolist()
