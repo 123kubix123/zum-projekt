@@ -2,6 +2,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.datasets import fetch_covtype, load_iris, make_classification
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import OneHotEncoder
 import time
 import pandas as pd
 from DecompositionClassifier import DecompositionClassifier
@@ -9,7 +10,7 @@ import pickle
 
 
 def synth_data(size=3000):
-    data = make_classification(size, 10, n_informative=6, n_classes=5, random_state=42)
+    data = make_classification(size, 10, n_informative=6, n_classes=4, random_state=42)
     y = data[1]
     X = data[0]
     return X, y
@@ -31,6 +32,9 @@ def load_fars(n=None):
         data = data.sample(n)
     y = data['INJURY_SEVERITY'].values.tolist()
     X = data.drop('INJURY_SEVERITY', axis=1).values.tolist()
+    enc = OneHotEncoder(handle_unknown='ignore')
+    enc.fit(X)
+    X = enc.transform(X).toarray()
     print('Successfully loaded fars dataset.')
     return X, y
 

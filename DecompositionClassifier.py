@@ -38,9 +38,9 @@ class DecompositionClassifier:
             zeros = [0 for i in range(2 ** (k - i))]
 
             if i%2 == 0:
-                tmp = (ones + zeros) * (i+1)
+                tmp = (ones + zeros) * (i+2)
             else:
-                tmp = (zeros + ones) * (i)
+                tmp = (zeros + ones) * (i+1)
             codes.append(tmp[:n].copy())
         return codes
 
