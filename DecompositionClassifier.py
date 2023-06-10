@@ -22,6 +22,15 @@ class DecompositionClassifier:
         return np.unique(values).tolist()
 
     @staticmethod
+    def fix_single_class(codes, k, n):
+        for i in range(n):
+            column = [row[i] for row in codes]
+            classes_in_column = DecompositionClassifier.find_unique_values(column)
+            if len(classes_in_column) == 1:
+                codes[random.randint(0,k-1)][i] = 0 if classes_in_column[0] == 1 else 1
+        return codes
+
+    @staticmethod
     def exhaustive_codes(k, n):
         """
         When 3 <= k(lasy) <= 7, we construct a code of length 2^{k-1}-1 as follows. Row 1 is all ones. Row 2
@@ -42,6 +51,8 @@ class DecompositionClassifier:
             else:
                 tmp = (zeros + ones) * (i+1)
             codes.append(tmp[:n].copy())
+        # fix for single class classifiers
+        codes = DecompositionClassifier.fix_single_class(codes, k, n)
         return codes
 
     @staticmethod
@@ -59,7 +70,11 @@ class DecompositionClassifier:
             c_list = list(f'{code:0{n}b}')
             codes.append([int(c) for c in c_list])
             codes.append([1-int(c) for c in c_list])
-        return codes[:k]
+
+        codes = codes[:k]
+         # fix for single class classifiers
+        codes = DecompositionClassifier.fix_single_class(codes, k, n)
+        return codes
 
     def __class_included_in_classifier(self, classifier_no, class_value):
         if self.__ecoc_matrix_[self.__classes_.index(class_value)][classifier_no] == 1:

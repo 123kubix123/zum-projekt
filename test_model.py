@@ -97,7 +97,7 @@ model_base = RandomForestClassifier()
 #X, y = load_letter()
 X, y = load_thyroid()
 #X, y = load_fars()
-run_k_fold(model_our, model_base, X, y)
+#run_k_fold(model_our, model_base, X, y)
 
 # zapis
 #with open(model_our_path, 'wb') as handle:
